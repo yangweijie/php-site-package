@@ -1,0 +1,9 @@
+#!/usr/bin/env php
+<?php
+
+define('LARAVEL_START', microtime(true));
+
+// Laravel Artisan Console Application
+echo "Laravel Artisan Console Application\n";
+echo "This is a demo Laravel project for PHP Desktop Packager\n";
+?>
