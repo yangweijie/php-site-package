@@ -117,7 +117,7 @@ Tokio                         // 异步运行时
 
 ```bash
 # 1. 克隆项目
-git clone https://github.com/your-username/php-desktop-packager.git
+git clone https://github.com/yangweijie/php-desktop-packager.git
 cd php-desktop-packager
 
 # 2. 安装依赖
@@ -410,7 +410,7 @@ npm run test:api
 #### 3. 代码贡献
 ```bash
 # 1. Fork 项目
-git clone https://github.com/your-username/php-desktop-packager.git
+git clone https://github.com/yangweijie/php-desktop-packager.git
 
 # 2. 创建功能分支
 git checkout -b feature/amazing-feature
@@ -445,8 +445,8 @@ git push origin feature/amazing-feature
 
 感谢所有为项目做出贡献的开发者！
 
-<a href="https://github.com/your-username/php-desktop-packager/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=your-username/php-desktop-packager" />
+<a href="https://github.com/yangweijie/php-desktop-packager/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=yangweijie/php-desktop-packager" />
 </a>
 
 ## 📄 许可证
@@ -488,9 +488,9 @@ git push origin feature/amazing-feature
 
 ### 🌟 如果这个项目对您有帮助，请给我们一个 Star！
 
-[![GitHub stars](https://img.shields.io/github/stars/your-username/php-desktop-packager?style=social)](https://github.com/your-username/php-desktop-packager/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/your-username/php-desktop-packager?style=social)](https://github.com/your-username/php-desktop-packager/network/members)
-[![GitHub watchers](https://img.shields.io/github/watchers/your-username/php-desktop-packager?style=social)](https://github.com/your-username/php-desktop-packager/watchers)
+[![GitHub stars](https://img.shields.io/github/stars/yang wei jie/php-desktop-packager?style=social)](https://github.com/yangweijie/php-desktop-packager/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/yangweijie/php-desktop-packager?style=social)](https://github.com/yangweijie/php-desktop-packager/network/members)
+[![GitHub watchers](https://img.shields.io/github/watchers/yangweijie/php-desktop-packager?style=social)](https://github.com/yangweijie/php-desktop-packager/watchers)
 
 **让PHP项目的桌面化变得简单而强大！**
 
