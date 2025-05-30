@@ -20,7 +20,9 @@ import {
   Tree,
   Switch,
   Alert,
-  Divider
+  Divider,
+  Checkbox,
+  message
 } from 'antd';
 import {
   UserAddOutlined,
@@ -79,6 +81,7 @@ const TeamManagement: React.FC = () => {
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [form] = Form.useForm();
+  const [roleForm] = Form.useForm();
 
   useEffect(() => {
     loadTeamData();
@@ -206,8 +209,8 @@ const TeamManagement: React.FC = () => {
   const handleUpdateMemberRole = async (memberId: string, newRole: string) => {
     try {
       const rolePermissions = roles.find(r => r.id === newRole)?.permissions || [];
-      setMembers(prev => prev.map(member => 
-        member.id === memberId 
+      setMembers(prev => prev.map(member =>
+        member.id === memberId
           ? { ...member, role: newRole as any, permissions: rolePermissions }
           : member
       ));
@@ -221,6 +224,39 @@ const TeamManagement: React.FC = () => {
       setMembers(prev => prev.filter(member => member.id !== memberId));
     } catch (error) {
       console.error('移除成员失败:', error);
+    }
+  };
+
+  const handleUpdateRole = async (values: any) => {
+    try {
+      if (selectedRole) {
+        const updatedRole = {
+          ...selectedRole,
+          name: values.name,
+          description: values.description,
+          permissions: values.permissions || [],
+          color: values.color || selectedRole.color
+        };
+
+        setRoles(prev => prev.map(role =>
+          role.id === selectedRole.id ? updatedRole : role
+        ));
+
+        // 更新拥有此角色的成员权限
+        setMembers(prev => prev.map(member =>
+          member.role === selectedRole.id
+            ? { ...member, permissions: updatedRole.permissions }
+            : member
+        ));
+
+        setRoleModalVisible(false);
+        setSelectedRole(null);
+        roleForm.resetFields();
+        message.success('角色更新成功');
+      }
+    } catch (error) {
+      console.error('更新角色失败:', error);
+      message.error('更新角色失败');
     }
   };
 
@@ -275,9 +311,9 @@ const TeamManagement: React.FC = () => {
       dataIndex: 'status',
       key: 'status',
       render: (status: string) => (
-        <Badge 
-          status={getStatusColor(status) as any} 
-          text={status === 'active' ? '活跃' : status === 'inactive' ? '非活跃' : '待激活'} 
+        <Badge
+          status={getStatusColor(status) as any}
+          text={status === 'active' ? '活跃' : status === 'inactive' ? '非活跃' : '待激活'}
         />
       )
     },
@@ -313,7 +349,7 @@ const TeamManagement: React.FC = () => {
               </Option>
             ))}
           </Select>
-          
+
           <Tooltip title="编辑权限">
             <Button
               type="text"
@@ -325,7 +361,7 @@ const TeamManagement: React.FC = () => {
               }}
             />
           </Tooltip>
-          
+
           {record.role !== 'owner' && (
             <Popconfirm
               title="确定要移除这个成员吗？"
@@ -473,7 +509,7 @@ const TeamManagement: React.FC = () => {
             style={{ marginBottom: 16 }}
             showIcon
           />
-          
+
           <Tree
             treeData={treeData}
             defaultExpandAll
@@ -514,7 +550,7 @@ const TeamManagement: React.FC = () => {
           >
             <Input placeholder="输入成员姓名" />
           </Form.Item>
-          
+
           <Form.Item
             label="邮箱"
             name="email"
@@ -525,7 +561,7 @@ const TeamManagement: React.FC = () => {
           >
             <Input placeholder="输入邮箱地址" />
           </Form.Item>
-          
+
           <Form.Item
             label="角色"
             name="role"
@@ -542,7 +578,7 @@ const TeamManagement: React.FC = () => {
               ))}
             </Select>
           </Form.Item>
-          
+
           <Form.Item
             label="项目权限"
             name="projects"
@@ -557,6 +593,126 @@ const TeamManagement: React.FC = () => {
             </Select>
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* 角色编辑模态框 */}
+      <Modal
+        title={selectedRole ? `编辑角色: ${selectedRole.name}` : '角色管理'}
+        open={roleModalVisible}
+        onCancel={() => {
+          setRoleModalVisible(false);
+          setSelectedRole(null);
+          roleForm.resetFields();
+        }}
+        onOk={() => roleForm.submit()}
+        width={600}
+      >
+        {selectedRole && (
+          <Form
+            form={roleForm}
+            layout="vertical"
+            onFinish={handleUpdateRole}
+            initialValues={{
+              name: selectedRole.name,
+              description: selectedRole.description,
+              permissions: selectedRole.permissions,
+              color: selectedRole.color
+            }}
+          >
+            <Form.Item
+              label="角色名称"
+              name="name"
+              rules={[{ required: true, message: '请输入角色名称' }]}
+            >
+              <Input placeholder="输入角色名称" disabled={selectedRole.isDefault} />
+            </Form.Item>
+
+            <Form.Item
+              label="角色描述"
+              name="description"
+              rules={[{ required: true, message: '请输入角色描述' }]}
+            >
+              <Input.TextArea
+                rows={3}
+                placeholder="输入角色描述"
+                disabled={selectedRole.isDefault}
+              />
+            </Form.Item>
+
+            <Form.Item
+              label="角色颜色"
+              name="color"
+            >
+              <Select placeholder="选择角色颜色" disabled={selectedRole.isDefault}>
+                <Option value="red">红色</Option>
+                <Option value="orange">橙色</Option>
+                <Option value="blue">蓝色</Option>
+                <Option value="green">绿色</Option>
+                <Option value="purple">紫色</Option>
+                <Option value="cyan">青色</Option>
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              label="权限设置"
+              name="permissions"
+            >
+              <Checkbox.Group
+                style={{ width: '100%' }}
+                disabled={selectedRole.id === 'owner' || selectedRole.permissions.includes('all')}
+              >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {Object.keys(permissionTree).map(category => (
+                    <div key={category}>
+                      <Divider orientation="left" style={{ margin: '8px 0' }}>
+                        <Text strong>{category}</Text>
+                      </Divider>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                        {permissionTree[category].map((perm: any) => (
+                          <Checkbox
+                            key={perm.key}
+                            value={perm.key}
+                            style={{ marginBottom: '8px' }}
+                          >
+                            <Space>
+                              <span>{perm.title}</span>
+                              <Tag
+                                size="small"
+                                color={perm.level === 'read' ? 'green' : perm.level === 'write' ? 'blue' : 'red'}
+                              >
+                                {perm.level === 'read' ? '读取' : perm.level === 'write' ? '写入' : '管理'}
+                              </Tag>
+                            </Space>
+                          </Checkbox>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Checkbox.Group>
+            </Form.Item>
+
+            {selectedRole.id === 'owner' && (
+              <Alert
+                message="所有者角色"
+                description="所有者角色拥有所有权限，无法修改权限设置。"
+                type="info"
+                showIcon
+                style={{ marginTop: 16 }}
+              />
+            )}
+
+            {selectedRole.isDefault && (
+              <Alert
+                message="默认角色"
+                description="这是系统默认角色，只能修改权限设置，不能修改名称和描述。"
+                type="warning"
+                showIcon
+                style={{ marginTop: 16 }}
+              />
+            )}
+          </Form>
+        )}
       </Modal>
     </div>
   );

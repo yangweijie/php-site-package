@@ -9,7 +9,6 @@ import {
   Form,
   Input,
   Select,
-  message,
   Popconfirm,
   Typography,
   Tabs,
@@ -17,6 +16,7 @@ import {
   Progress,
   Alert
 } from 'antd';
+import { useMessage } from '../hooks/useMessage';
 import {
   PlusOutlined,
   DeleteOutlined,
@@ -29,7 +29,7 @@ import {
 
 const { Text, Title } = Typography;
 const { Option } = Select;
-const { TabPane } = Tabs;
+
 
 interface Dependency {
   name: string;
@@ -55,6 +55,7 @@ const DependencyManager: React.FC<DependencyManagerProps> = ({
   const [installProgress, setInstallProgress] = useState(0);
   const [isInstalling, setIsInstalling] = useState(false);
   const [form] = Form.useForm();
+  const message = useMessage();
 
   useEffect(() => {
     loadDependencies();
@@ -97,7 +98,7 @@ const DependencyManager: React.FC<DependencyManagerProps> = ({
           status: 'missing'
         }
       ];
-      
+
       setDependencies(mockDependencies);
       onDependencyChange?.(mockDependencies);
     } catch (error) {
@@ -112,7 +113,7 @@ const DependencyManager: React.FC<DependencyManagerProps> = ({
     try {
       setIsInstalling(true);
       setInstallProgress(0);
-      
+
       // 模拟安装过程
       const steps = [
         'Downloading packages...',
@@ -121,19 +122,19 @@ const DependencyManager: React.FC<DependencyManagerProps> = ({
         'Optimizing autoloader...',
         'Installation complete!'
       ];
-      
+
       for (let i = 0; i < steps.length; i++) {
         await new Promise(resolve => setTimeout(resolve, 1000));
         setInstallProgress((i + 1) / steps.length * 100);
         message.info(steps[i]);
       }
-      
+
       // 更新依赖状态
       setDependencies(prev => prev.map(dep => ({
         ...dep,
         status: dep.status === 'missing' ? 'installed' : dep.status
       })));
-      
+
       message.success('依赖安装完成');
     } catch (error) {
       message.error('依赖安装失败');
@@ -153,7 +154,7 @@ const DependencyManager: React.FC<DependencyManagerProps> = ({
         description: values.description,
         status: 'missing'
       };
-      
+
       setDependencies(prev => [...prev, newDep]);
       setModalVisible(false);
       form.resetFields();
@@ -176,8 +177,8 @@ const DependencyManager: React.FC<DependencyManagerProps> = ({
 
   const handleUpdateDependency = async (name: string) => {
     try {
-      setDependencies(prev => prev.map(dep => 
-        dep.name === name 
+      setDependencies(prev => prev.map(dep =>
+        dep.name === name
           ? { ...dep, status: 'installed', version: dep.latestVersion || dep.version }
           : dep
       ));
@@ -253,7 +254,7 @@ const DependencyManager: React.FC<DependencyManagerProps> = ({
       key: 'status',
       render: (status: string) => (
         <Tag color={getStatusColor(status)} icon={getStatusIcon(status)}>
-          {status === 'installed' ? '已安装' : 
+          {status === 'installed' ? '已安装' :
            status === 'missing' ? '缺失' : '需更新'}
         </Tag>
       )
@@ -342,8 +343,8 @@ const DependencyManager: React.FC<DependencyManagerProps> = ({
         <Alert
           message="正在安装依赖..."
           description={
-            <Progress 
-              percent={Math.round(installProgress)} 
+            <Progress
+              percent={Math.round(installProgress)}
               status="active"
               style={{ marginTop: 8 }}
             />
@@ -354,26 +355,37 @@ const DependencyManager: React.FC<DependencyManagerProps> = ({
       )}
 
       {/* 依赖列表 */}
-      <Tabs defaultActiveKey="require">
-        <TabPane tab={`生产依赖 (${requireDeps.length})`} key="require">
-          <Table
-            columns={columns}
-            dataSource={requireDeps}
-            rowKey="name"
-            size="small"
-            pagination={false}
-          />
-        </TabPane>
-        <TabPane tab={`开发依赖 (${devDeps.length})`} key="require-dev">
-          <Table
-            columns={columns}
-            dataSource={devDeps}
-            rowKey="name"
-            size="small"
-            pagination={false}
-          />
-        </TabPane>
-      </Tabs>
+      <Tabs
+        defaultActiveKey="require"
+        items={[
+          {
+            key: 'require',
+            label: `生产依赖 (${requireDeps.length})`,
+            children: (
+              <Table
+                columns={columns}
+                dataSource={requireDeps}
+                rowKey="name"
+                size="small"
+                pagination={false}
+              />
+            )
+          },
+          {
+            key: 'require-dev',
+            label: `开发依赖 (${devDeps.length})`,
+            children: (
+              <Table
+                columns={columns}
+                dataSource={devDeps}
+                rowKey="name"
+                size="small"
+                pagination={false}
+              />
+            )
+          }
+        ]}
+      />
 
       {/* 添加依赖模态框 */}
       <Modal
@@ -397,7 +409,7 @@ const DependencyManager: React.FC<DependencyManagerProps> = ({
           >
             <Input placeholder="例如: guzzlehttp/guzzle" />
           </Form.Item>
-          
+
           <Form.Item
             label="版本"
             name="version"
@@ -405,7 +417,7 @@ const DependencyManager: React.FC<DependencyManagerProps> = ({
           >
             <Input placeholder="例如: ^7.0" />
           </Form.Item>
-          
+
           <Form.Item
             label="类型"
             name="type"
@@ -416,7 +428,7 @@ const DependencyManager: React.FC<DependencyManagerProps> = ({
               <Option value="require-dev">开发依赖</Option>
             </Select>
           </Form.Item>
-          
+
           <Form.Item
             label="描述"
             name="description"

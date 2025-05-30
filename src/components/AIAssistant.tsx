@@ -34,7 +34,7 @@ import {
 } from '@ant-design/icons';
 
 const { Title, Text, Paragraph } = Typography;
-const { TabPane } = Tabs;
+
 const { TextArea } = Input;
 
 interface AIAnalysis {
@@ -76,7 +76,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
     try {
       // 模拟AI分析过程
       await new Promise(resolve => setTimeout(resolve, 3000));
-      
+
       const mockAnalyses: AIAnalysis[] = [
         {
           id: '1',
@@ -127,7 +127,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
           effort: 'low'
         }
       ];
-      
+
       setAnalyses(mockAnalyses);
     } catch (error) {
       console.error('AI分析失败:', error);
@@ -140,13 +140,13 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
     try {
       // 模拟应用修复
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setAnalyses(prev => prev.map(analysis => 
-        analysis.id === analysisId 
+
+      setAnalyses(prev => prev.map(analysis =>
+        analysis.id === analysisId
           ? { ...analysis, severity: 'low' as const, title: analysis.title + ' (已修复)' }
           : analysis
       ));
-      
+
       onApplyFix?.(analysisId);
     } catch (error) {
       console.error('应用修复失败:', error);
@@ -155,17 +155,17 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
 
   const handleSendMessage = async () => {
     if (!chatInput.trim()) return;
-    
+
     const userMessage = {
       id: Date.now().toString(),
       type: 'user',
       content: chatInput,
       timestamp: new Date().toLocaleTimeString()
     };
-    
+
     setChatMessages(prev => [...prev, userMessage]);
     setChatInput('');
-    
+
     // 模拟AI回复
     setTimeout(() => {
       const aiMessage = {
@@ -232,213 +232,234 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
         </Button>
       }
     >
-      <Tabs activeKey={activeTab} onChange={setActiveTab}>
-        {/* 智能分析 */}
-        <TabPane tab={<><BulbOutlined /> 智能分析</>} key="analysis">
-          {loading ? (
-            <div style={{ textAlign: 'center', padding: 40 }}>
-              <Progress type="circle" percent={75} />
-              <div style={{ marginTop: 16 }}>
-                <Text>AI正在分析您的项目...</Text>
-              </div>
-            </div>
-          ) : (
-            <Space direction="vertical" style={{ width: '100%' }}>
-              {/* 分析概览 */}
-              <Card size="small" title="分析概览">
-                <Space>
-                  <Tag color="red">严重: {severityCounts.critical || 0}</Tag>
-                  <Tag color="orange">高: {severityCounts.high || 0}</Tag>
-                  <Tag color="yellow">中: {severityCounts.medium || 0}</Tag>
-                  <Tag color="green">低: {severityCounts.low || 0}</Tag>
-                </Space>
-              </Card>
-
-              {/* 分析结果 */}
-              <List
-                dataSource={analyses}
-                renderItem={(analysis) => (
-                  <List.Item
-                    actions={[
-                      analysis.autoFixAvailable && (
-                        <Button
-                          type="primary"
-                          size="small"
-                          onClick={() => handleApplyFix(analysis.id)}
-                        >
-                          自动修复
-                        </Button>
-                      ),
-                      <Button size="small">查看详情</Button>
-                    ].filter(Boolean)}
-                  >
-                    <List.Item.Meta
-                      avatar={
-                        <Avatar
-                          icon={getTypeIcon(analysis.type)}
-                          style={{ backgroundColor: getSeverityColor(analysis.severity) }}
-                        />
-                      }
-                      title={
-                        <Space>
-                          {analysis.title}
-                          <Tag color={getSeverityColor(analysis.severity)}>
-                            {analysis.severity}
-                          </Tag>
-                          {analysis.autoFixAvailable && (
-                            <Tag color="blue">可自动修复</Tag>
-                          )}
-                        </Space>
-                      }
-                      description={
-                        <div>
-                          <Paragraph ellipsis={{ rows: 2 }}>
-                            {analysis.description}
-                          </Paragraph>
-                          <div style={{ marginTop: 8 }}>
-                            <Space>
-                              <Text type="secondary">
-                                置信度: <Rate disabled value={Math.round(analysis.confidence * 5)} />
-                              </Text>
-                              <Text type="secondary">
-                                修复难度: {analysis.effort}
-                              </Text>
-                            </Space>
-                          </div>
-                        </div>
-                      }
-                    />
-                  </List.Item>
-                )}
-              />
-            </Space>
-          )}
-        </TabPane>
-
-        {/* AI对话 */}
-        <TabPane tab={<><RobotOutlined /> AI对话</>} key="chat">
-          <div style={{ height: 400, display: 'flex', flexDirection: 'column' }}>
-            <div style={{ flex: 1, overflow: 'auto', marginBottom: 16 }}>
-              {chatMessages.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: 40 }}>
-                  <RobotOutlined style={{ fontSize: 48, color: '#ccc', marginBottom: 16 }} />
-                  <Text type="secondary">向AI助手提问关于您项目的任何问题</Text>
+      <Tabs
+        activeKey={activeTab}
+        onChange={setActiveTab}
+        items={[
+          {
+            key: 'analysis',
+            label: (
+              <>
+                <BulbOutlined /> 智能分析
+              </>
+            ),
+            children: loading ? (
+              <div style={{ textAlign: 'center', padding: 40 }}>
+                <Progress type="circle" percent={75} />
+                <div style={{ marginTop: 16 }}>
+                  <Text>AI正在分析您的项目...</Text>
                 </div>
-              ) : (
+              </div>
+            ) : (
+              <Space direction="vertical" style={{ width: '100%' }}>
+                {/* 分析概览 */}
+                <Card size="small" title="分析概览">
+                  <Space>
+                    <Tag color="red">严重: {severityCounts.critical || 0}</Tag>
+                    <Tag color="orange">高: {severityCounts.high || 0}</Tag>
+                    <Tag color="yellow">中: {severityCounts.medium || 0}</Tag>
+                    <Tag color="green">低: {severityCounts.low || 0}</Tag>
+                  </Space>
+                </Card>
+
+                {/* 分析结果 */}
                 <List
-                  dataSource={chatMessages}
-                  renderItem={(message) => (
-                    <List.Item style={{ border: 'none', padding: '8px 0' }}>
-                      <div style={{ 
-                        width: '100%',
-                        display: 'flex',
-                        justifyContent: message.type === 'user' ? 'flex-end' : 'flex-start'
-                      }}>
-                        <div style={{
-                          maxWidth: '70%',
-                          padding: '8px 12px',
-                          borderRadius: '8px',
-                          backgroundColor: message.type === 'user' ? '#1890ff' : '#f0f0f0',
-                          color: message.type === 'user' ? 'white' : 'black'
-                        }}>
-                          <div>{message.content}</div>
-                          <div style={{ 
-                            fontSize: '12px', 
-                            opacity: 0.7, 
-                            marginTop: 4 
-                          }}>
-                            {message.timestamp}
+                  dataSource={analyses}
+                  renderItem={(analysis) => (
+                    <List.Item
+                      actions={[
+                        analysis.autoFixAvailable && (
+                          <Button
+                            type="primary"
+                            size="small"
+                            onClick={() => handleApplyFix(analysis.id)}
+                          >
+                            自动修复
+                          </Button>
+                        ),
+                        <Button size="small">查看详情</Button>
+                      ].filter(Boolean)}
+                    >
+                      <List.Item.Meta
+                        avatar={
+                          <Avatar
+                            icon={getTypeIcon(analysis.type)}
+                            style={{ backgroundColor: getSeverityColor(analysis.severity) }}
+                          />
+                        }
+                        title={
+                          <Space>
+                            {analysis.title}
+                            <Tag color={getSeverityColor(analysis.severity)}>
+                              {analysis.severity}
+                            </Tag>
+                            {analysis.autoFixAvailable && (
+                              <Tag color="blue">可自动修复</Tag>
+                            )}
+                          </Space>
+                        }
+                        description={
+                          <div>
+                            <Paragraph ellipsis={{ rows: 2 }}>
+                              {analysis.description}
+                            </Paragraph>
+                            <div style={{ marginTop: 8 }}>
+                              <Space>
+                                <Text type="secondary">
+                                  置信度: <Rate disabled value={Math.round(analysis.confidence * 5)} />
+                                </Text>
+                                <Text type="secondary">
+                                  修复难度: {analysis.effort}
+                                </Text>
+                              </Space>
+                            </div>
                           </div>
-                        </div>
-                      </div>
+                        }
+                      />
                     </List.Item>
                   )}
                 />
-              )}
-            </div>
-            
-            <div style={{ display: 'flex', gap: 8 }}>
-              <TextArea
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                placeholder="向AI助手提问..."
-                autoSize={{ minRows: 1, maxRows: 3 }}
-                onPressEnter={(e) => {
-                  if (!e.shiftKey) {
-                    e.preventDefault();
-                    handleSendMessage();
-                  }
-                }}
-              />
-              <Button
-                type="primary"
-                icon={<SendOutlined />}
-                onClick={handleSendMessage}
-                disabled={!chatInput.trim()}
-              >
-                发送
-              </Button>
-            </div>
-          </div>
-        </TabPane>
+              </Space>
+            )
+          },
+          {
+            key: 'chat',
+            label: (
+              <>
+                <RobotOutlined /> AI对话
+              </>
+            ),
+            children: (
+              <div style={{ height: 400, display: 'flex', flexDirection: 'column' }}>
+                <div style={{ flex: 1, overflow: 'auto', marginBottom: 16 }}>
+                  {chatMessages.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 40 }}>
+                      <RobotOutlined style={{ fontSize: 48, color: '#ccc', marginBottom: 16 }} />
+                      <Text type="secondary">向AI助手提问关于您项目的任何问题</Text>
+                    </div>
+                  ) : (
+                    <List
+                      dataSource={chatMessages}
+                      renderItem={(message) => (
+                        <List.Item style={{ border: 'none', padding: '8px 0' }}>
+                          <div style={{
+                            width: '100%',
+                            display: 'flex',
+                            justifyContent: message.type === 'user' ? 'flex-end' : 'flex-start'
+                          }}>
+                            <div style={{
+                              maxWidth: '70%',
+                              padding: '8px 12px',
+                              borderRadius: '8px',
+                              backgroundColor: message.type === 'user' ? '#1890ff' : '#f0f0f0',
+                              color: message.type === 'user' ? 'white' : 'black'
+                            }}>
+                              <div>{message.content}</div>
+                              <div style={{
+                                fontSize: '12px',
+                                opacity: 0.7,
+                                marginTop: 4
+                              }}>
+                                {message.timestamp}
+                              </div>
+                            </div>
+                          </div>
+                        </List.Item>
+                      )}
+                    />
+                  )}
+                </div>
 
-        {/* 优化建议 */}
-        <TabPane tab={<><ThunderboltOutlined /> 优化建议</>} key="suggestions">
-          <Space direction="vertical" style={{ width: '100%' }}>
-            <Alert
-              message="智能优化建议"
-              description="基于AI分析为您的项目提供个性化的优化建议"
-              type="info"
-              showIcon
-            />
-
-            <List
-              dataSource={[
-                {
-                  title: '启用PHP OPcache',
-                  description: '可以显著提高PHP应用性能，建议在生产环境中启用',
-                  impact: '性能提升20-30%',
-                  difficulty: '简单'
-                },
-                {
-                  title: '优化数据库索引',
-                  description: '为常用查询字段添加索引，提高数据库查询效率',
-                  impact: '查询速度提升50%',
-                  difficulty: '中等'
-                },
-                {
-                  title: '使用CDN加速',
-                  description: '将静态资源部署到CDN，提高全球访问速度',
-                  impact: '加载速度提升40%',
-                  difficulty: '中等'
-                }
-              ]}
-              renderItem={(item) => (
-                <List.Item
-                  actions={[
-                    <Button type="primary" size="small">应用建议</Button>,
-                    <Button size="small">了解更多</Button>
-                  ]}
-                >
-                  <List.Item.Meta
-                    avatar={<Avatar icon={<BulbOutlined />} />}
-                    title={item.title}
-                    description={
-                      <div>
-                        <div>{item.description}</div>
-                        <div style={{ marginTop: 8 }}>
-                          <Tag color="green">影响: {item.impact}</Tag>
-                          <Tag color="blue">难度: {item.difficulty}</Tag>
-                        </div>
-                      </div>
-                    }
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <TextArea
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    placeholder="向AI助手提问..."
+                    autoSize={{ minRows: 1, maxRows: 3 }}
+                    onPressEnter={(e) => {
+                      if (!e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage();
+                      }
+                    }}
                   />
-                </List.Item>
-              )}
-            />
-          </Space>
-        </TabPane>
-      </Tabs>
+                  <Button
+                    type="primary"
+                    icon={<SendOutlined />}
+                    onClick={handleSendMessage}
+                    disabled={!chatInput.trim()}
+                  >
+                    发送
+                  </Button>
+                </div>
+              </div>
+            )
+          },
+          {
+            key: 'suggestions',
+            label: (
+              <>
+                <ThunderboltOutlined /> 优化建议
+              </>
+            ),
+            children: (
+              <Space direction="vertical" style={{ width: '100%' }}>
+                <Alert
+                  message="智能优化建议"
+                  description="基于AI分析为您的项目提供个性化的优化建议"
+                  type="info"
+                  showIcon
+                />
+
+                <List
+                  dataSource={[
+                    {
+                      title: '启用PHP OPcache',
+                      description: '可以显著提高PHP应用性能，建议在生产环境中启用',
+                      impact: '性能提升20-30%',
+                      difficulty: '简单'
+                    },
+                    {
+                      title: '优化数据库索引',
+                      description: '为常用查询字段添加索引，提高数据库查询效率',
+                      impact: '查询速度提升50%',
+                      difficulty: '中等'
+                    },
+                    {
+                      title: '使用CDN加速',
+                      description: '将静态资源部署到CDN，提高全球访问速度',
+                      impact: '加载速度提升40%',
+                      difficulty: '中等'
+                    }
+                  ]}
+                  renderItem={(item) => (
+                    <List.Item
+                      actions={[
+                        <Button type="primary" size="small">应用建议</Button>,
+                        <Button size="small">了解更多</Button>
+                      ]}
+                    >
+                      <List.Item.Meta
+                        avatar={<Avatar icon={<BulbOutlined />} />}
+                        title={item.title}
+                        description={
+                          <div>
+                            <div>{item.description}</div>
+                            <div style={{ marginTop: 8 }}>
+                              <Tag color="green">影响: {item.impact}</Tag>
+                              <Tag color="blue">难度: {item.difficulty}</Tag>
+                            </div>
+                          </div>
+                        }
+                      />
+                    </List.Item>
+                  )}
+                />
+              </Space>
+            )
+          }
+        ]}
+      />
     </Card>
   );
 };

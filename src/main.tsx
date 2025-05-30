@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
-import { ConfigProvider, theme } from "antd";
+import { ConfigProvider, theme, App as AntdApp } from "antd";
 import { useThemeStore } from "./store/useThemeStore";
 import App from "./App";
 import "./styles.css";
@@ -16,7 +16,9 @@ const ThemedApp: React.FC = () => {
         token: getThemeToken(),
       }}
     >
-      <App />
+      <AntdApp>
+        <App />
+      </AntdApp>
     </ConfigProvider>
   );
 };

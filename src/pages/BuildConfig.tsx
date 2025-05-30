@@ -11,11 +11,11 @@ import {
   Upload,
   InputNumber,
   Divider,
-  message,
   Row,
   Col,
   Tabs
 } from 'antd';
+import { useMessage } from '../hooks/useMessage';
 import {
   UploadOutlined,
   SaveOutlined,
@@ -37,7 +37,6 @@ import RealTimeCollaboration from '../components/RealTimeCollaboration';
 const { Title, Text } = Typography;
 const { Option } = Select;
 const { TextArea } = Input;
-const { TabPane } = Tabs;
 
 interface BuildConfig {
   appName: string;
@@ -59,6 +58,7 @@ const BuildConfig: React.FC = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('basic');
+  const message = useMessage();
 
   const platformOptions = [
     { label: 'Windows (x64)', value: 'windows-x64' },
@@ -102,6 +102,101 @@ const BuildConfig: React.FC = () => {
     }
   };
 
+  const tabItems = [
+    {
+      key: 'basic',
+      label: (
+        <>
+          <SettingOutlined /> 基础配置
+        </>
+      ),
+      children: (
+        <BasicConfigForm
+          form={form}
+          loading={loading}
+          onSave={handleSaveConfig}
+          platformOptions={platformOptions}
+          phpVersionOptions={phpVersionOptions}
+          phpExtensions={phpExtensions}
+          handleIconUpload={handleIconUpload}
+        />
+      )
+    },
+    {
+      key: 'advanced',
+      label: (
+        <>
+          <ThunderboltOutlined /> 高级配置
+        </>
+      ),
+      children: <AdvancedBuildConfig onSave={(config) => console.log('高级配置:', config)} />
+    },
+    {
+      key: 'dependencies',
+      label: (
+        <>
+          <ApiOutlined /> 依赖管理
+        </>
+      ),
+      children: (
+        <DependencyManager
+          projectPath="/path/to/project"
+          onDependencyChange={(deps) => console.log('依赖变更:', deps)}
+        />
+      )
+    },
+    {
+      key: 'team',
+      label: (
+        <>
+          <TeamOutlined /> 团队管理
+        </>
+      ),
+      children: <TeamManagement />
+    },
+    {
+      key: 'version',
+      label: (
+        <>
+          <BranchesOutlined /> 版本控制
+        </>
+      ),
+      children: (
+        <VersionControl
+          projectPath="/path/to/project"
+          onRepositoryChange={(repo) => console.log('仓库变更:', repo)}
+        />
+      )
+    },
+    {
+      key: 'collaboration',
+      label: (
+        <>
+          <TeamOutlined /> 实时协作
+        </>
+      ),
+      children: (
+        <RealTimeCollaboration
+          projectId="project-1"
+          currentUser={{
+            id: 'user-1',
+            name: '当前用户',
+            avatar: ''
+          }}
+        />
+      )
+    },
+    {
+      key: 'performance',
+      label: (
+        <>
+          <DashboardOutlined /> 性能监控
+        </>
+      ),
+      children: <PerformanceMonitor />
+    }
+  ];
+
   return (
     <div>
       <div style={{ marginBottom: 24 }}>
@@ -109,63 +204,7 @@ const BuildConfig: React.FC = () => {
         <Text type="secondary">完整的项目配置、团队协作、版本控制和性能监控</Text>
       </div>
 
-      <Tabs activeKey={activeTab} onChange={setActiveTab}>
-        {/* 基础配置 */}
-        <TabPane tab={<><SettingOutlined /> 基础配置</>} key="basic">
-          <BasicConfigForm
-            form={form}
-            loading={loading}
-            onSave={handleSaveConfig}
-            platformOptions={platformOptions}
-            phpVersionOptions={phpVersionOptions}
-            phpExtensions={phpExtensions}
-            handleIconUpload={handleIconUpload}
-          />
-        </TabPane>
-
-        {/* 高级配置 */}
-        <TabPane tab={<><ThunderboltOutlined /> 高级配置</>} key="advanced">
-          <AdvancedBuildConfig onSave={(config) => console.log('高级配置:', config)} />
-        </TabPane>
-
-        {/* 依赖管理 */}
-        <TabPane tab={<><ApiOutlined /> 依赖管理</>} key="dependencies">
-          <DependencyManager
-            projectPath="/path/to/project"
-            onDependencyChange={(deps) => console.log('依赖变更:', deps)}
-          />
-        </TabPane>
-
-        {/* 团队管理 */}
-        <TabPane tab={<><TeamOutlined /> 团队管理</>} key="team">
-          <TeamManagement />
-        </TabPane>
-
-        {/* 版本控制 */}
-        <TabPane tab={<><BranchesOutlined /> 版本控制</>} key="version">
-          <VersionControl
-            projectPath="/path/to/project"
-            onRepositoryChange={(repo) => console.log('仓库变更:', repo)}
-          />
-        </TabPane>
-
-        {/* 实时协作 */}
-        <TabPane tab={<><TeamOutlined /> 实时协作</>} key="collaboration">
-          <RealTimeCollaboration
-            projectId="project-1"
-            currentUser={{
-              id: 'user-1',
-              name: '当前用户',
-              avatar: ''
-            }}
-          />
-        </TabPane>
-
-        {/* 性能监控 */}
-        <TabPane tab={<><DashboardOutlined /> 性能监控</>} key="performance">
-          <PerformanceMonitor />
-        </TabPane>
-      </Tabs>
+      <Tabs activeKey={activeTab} onChange={setActiveTab} items={tabItems} />
     </div>
   );
 };
@@ -180,6 +219,9 @@ const BasicConfigForm: React.FC<{
   phpExtensions: string[];
   handleIconUpload: (info: any) => void;
 }> = ({ form, loading, onSave, platformOptions, phpVersionOptions, phpExtensions, handleIconUpload }) => {
+  const handleReset = () => {
+    form.resetFields();
+  };
   return (
     <Form
       form={form}
@@ -334,7 +376,7 @@ const BasicConfigForm: React.FC<{
 
         <div style={{ textAlign: 'center', marginTop: 24 }}>
           <Space>
-            <Button size="large">
+            <Button size="large" onClick={handleReset}>
               重置配置
             </Button>
             <Button

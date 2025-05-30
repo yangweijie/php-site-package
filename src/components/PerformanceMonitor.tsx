@@ -20,12 +20,12 @@ import {
 import {
   DashboardOutlined,
   ThunderboltOutlined,
-  MemoryOutlined,
+  DatabaseOutlined,
   ClockCircleOutlined,
   WarningOutlined,
   CheckCircleOutlined,
   LineChartOutlined,
-  OptimizationOutlined,
+  SettingOutlined,
   ReloadOutlined
 } from '@ant-design/icons';
 
@@ -72,7 +72,7 @@ const PerformanceMonitor: React.FC = () => {
     startupTime: 0,
     responseTime: 0
   });
-  
+
   const [issues, setIssues] = useState<PerformanceIssue[]>([]);
   const [suggestions, setSuggestions] = useState<OptimizationSuggestion[]>([]);
   const [monitoring, setMonitoring] = useState(true);
@@ -86,9 +86,9 @@ const PerformanceMonitor: React.FC = () => {
     } else {
       stopMonitoring();
     }
-    
+
     loadInitialData();
-    
+
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
@@ -200,7 +200,7 @@ const PerformanceMonitor: React.FC = () => {
     try {
       // 模拟自动修复
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
+
       setIssues(prev => prev.filter(issue => issue.id !== issueId));
     } catch (error) {
       console.error('自动修复失败:', error);
@@ -236,11 +236,11 @@ const PerformanceMonitor: React.FC = () => {
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case 'memory': return <MemoryOutlined />;
+      case 'memory': return <DatabaseOutlined />;
       case 'cpu': return <DashboardOutlined />;
       case 'disk': return <ThunderboltOutlined />;
       case 'network': return <LineChartOutlined />;
-      default: return <OptimizationOutlined />;
+      default: return <SettingOutlined />;
     }
   };
 
@@ -456,7 +456,7 @@ const PerformanceMonitor: React.FC = () => {
           <Card
             title={
               <Space>
-                <OptimizationOutlined />
+                <SettingOutlined />
                 优化建议 ({suggestions.filter(s => !s.implemented).length})
               </Space>
             }
@@ -485,7 +485,7 @@ const PerformanceMonitor: React.FC = () => {
                       <Space>
                         {suggestion.title}
                         <Tag color={getDifficultyColor(suggestion.difficulty)}>
-                          {suggestion.difficulty === 'easy' ? '简单' : 
+                          {suggestion.difficulty === 'easy' ? '简单' :
                            suggestion.difficulty === 'medium' ? '中等' : '困难'}
                         </Tag>
                       </Space>

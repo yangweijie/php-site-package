@@ -10,10 +10,10 @@ import {
   Form,
   Input,
   Select,
-  message,
   Empty,
   Popconfirm
 } from 'antd';
+import { useMessage } from '../hooks/useMessage';
 import {
   PlusOutlined,
   FolderOpenOutlined,
@@ -21,10 +21,12 @@ import {
   DeleteOutlined,
   SettingOutlined
 } from '@ant-design/icons';
-import { open } from '@tauri-apps/api/dialog';
 import { useProjectStore } from '../store/useProjectStore';
 import { tauriCommands, generateRandomPort, getProjectTypeColor } from '../utils/tauri';
+import { isTauriEnvironment } from '../utils/environment';
 import ProjectConfigModal from '../components/ProjectConfigModal';
+import EnvironmentIndicator from '../components/EnvironmentIndicator';
+import DirectoryBrowser from '../components/DirectoryBrowser';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -44,8 +46,10 @@ const ProjectManager: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [configModalVisible, setConfigModalVisible] = useState(false);
+  const [directoryBrowserVisible, setDirectoryBrowserVisible] = useState(false);
   const [selectedProject, setSelectedProject] = useState<any>(null);
   const [form] = Form.useForm();
+  const message = useMessage();
 
   useEffect(() => {
     loadProjects();
@@ -66,18 +70,37 @@ const ProjectManager: React.FC = () => {
   };
 
   const handleImportProject = async () => {
-    try {
-      const selected = await open({
-        directory: true,
-        multiple: false,
-        title: '选择PHP项目文件夹'
-      });
+    if (isTauriEnvironment()) {
+      // Tauri 环境，使用原生文件对话框
+      try {
+        const { open } = await import('@tauri-apps/api/dialog');
+        const result = await open({
+          directory: true,
+          multiple: false,
+          title: '选择PHP项目文件夹'
+        });
 
-      if (selected && typeof selected === 'string') {
-        const project = await tauriCommands.importPhpProject(selected);
-        addProject(project);
-        message.success('项目导入成功');
+        if (result && typeof result === 'string') {
+          const project = await tauriCommands.importPhpProject(result);
+          addProject(project);
+          message.success('项目导入成功');
+        }
+      } catch (error) {
+        message.error('项目导入失败');
+        console.error(error);
       }
+    } else {
+      // 浏览器环境，使用目录浏览器
+      setDirectoryBrowserVisible(true);
+    }
+  };
+
+  const handleDirectorySelect = async (path: string) => {
+    try {
+      setDirectoryBrowserVisible(false);
+      const project = await tauriCommands.importPhpProject(path);
+      addProject(project);
+      message.success(`项目导入成功: ${project.name}`);
     } catch (error) {
       message.error('项目导入失败');
       console.error(error);
@@ -150,7 +173,10 @@ const ProjectManager: React.FC = () => {
   return (
     <div>
       <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Title level={2}>项目管理</Title>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <Title level={2} style={{ margin: 0 }}>项目管理</Title>
+          <EnvironmentIndicator />
+        </div>
         <Button
           type="primary"
           icon={<PlusOutlined />}
@@ -272,6 +298,12 @@ const ProjectManager: React.FC = () => {
           setSelectedProject(null);
         }}
         onSave={handleSaveConfig}
+      />
+
+      <DirectoryBrowser
+        visible={directoryBrowserVisible}
+        onCancel={() => setDirectoryBrowserVisible(false)}
+        onSelect={handleDirectorySelect}
       />
     </div>
   );

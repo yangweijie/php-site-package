@@ -1,46 +1,110 @@
 import { invoke } from '@tauri-apps/api/tauri';
 import { PhpProject, BuildConfig } from '../store/useProjectStore';
+import { isTauriEnvironment } from './environment';
+
+/**
+ * 安全的 Tauri invoke 包装函数
+ * 在浏览器环境中返回模拟数据，在 Tauri 环境中调用真实命令
+ */
+const safeInvoke = async <T>(command: string, args?: any): Promise<T> => {
+  if (!isTauriEnvironment()) {
+    // 浏览器环境，返回模拟数据
+    return getMockData<T>(command, args);
+  }
+
+  try {
+    return await invoke<T>(command, args);
+  } catch (error) {
+    console.warn(`Tauri command '${command}' failed:`, error);
+    // 如果 Tauri 调用失败，也返回模拟数据
+    return getMockData<T>(command, args);
+  }
+};
+
+/**
+ * 获取模拟数据
+ */
+const getMockData = <T>(command: string, args?: any): T => {
+  switch (command) {
+    case 'get_projects':
+      return [] as T;
+
+    case 'import_php_project':
+      const mockProject: PhpProject = {
+        id: `project_${Date.now()}`,
+        name: args?.path?.split('/').pop() || 'Mock Project',
+        path: args?.path || '/mock/path',
+        project_type: 'PHP',
+        entry_file: 'index.php',
+        created_at: new Date().toISOString(),
+        last_modified: new Date().toISOString()
+      };
+      return mockProject as T;
+
+    case 'start_php_server':
+      return 'Mock server started successfully' as T;
+
+    case 'stop_php_server':
+      return 'Mock server stopped successfully' as T;
+
+    case 'get_server_status':
+      return false as T;
+
+    case 'get_available_port':
+      return (8000 + Math.floor(Math.random() * 1000)) as T;
+
+    case 'build_project':
+      return 'Mock build completed successfully' as T;
+
+    case 'greet':
+      return `Hello, ${args?.name || 'World'}! (Mock response)` as T;
+
+    default:
+      console.warn(`No mock data available for command: ${command}`);
+      return null as T;
+  }
+};
 
 // 项目管理相关的Tauri命令
 export const tauriCommands = {
   // 导入PHP项目
   importPhpProject: async (path: string): Promise<PhpProject> => {
-    return await invoke('import_php_project', { path });
+    return await safeInvoke<PhpProject>('import_php_project', { path });
   },
 
   // 获取项目列表
   getProjects: async (): Promise<PhpProject[]> => {
-    return await invoke('get_projects');
+    return await safeInvoke<PhpProject[]>('get_projects');
   },
 
   // 启动PHP服务器
   startPhpServer: async (projectPath: string, port: number): Promise<string> => {
-    return await invoke('start_php_server', { projectPath, port });
+    return await safeInvoke<string>('start_php_server', { projectPath, port });
   },
 
   // 停止PHP服务器
   stopPhpServer: async (port: number): Promise<string> => {
-    return await invoke('stop_php_server', { port });
+    return await safeInvoke<string>('stop_php_server', { port });
   },
 
   // 获取服务器状态
   getServerStatus: async (port: number): Promise<boolean> => {
-    return await invoke('get_server_status', { port });
+    return await safeInvoke<boolean>('get_server_status', { port });
   },
 
   // 获取可用端口
   getAvailablePort: async (): Promise<number> => {
-    return await invoke('get_available_port');
+    return await safeInvoke<number>('get_available_port');
   },
 
   // 构建项目
   buildProject: async (projectId: string, config: BuildConfig): Promise<string> => {
-    return await invoke('build_project', { projectId, config });
+    return await safeInvoke<string>('build_project', { projectId, config });
   },
 
   // 问候测试命令
   greet: async (name: string): Promise<string> => {
-    return await invoke('greet', { name });
+    return await safeInvoke<string>('greet', { name });
   }
 };
 

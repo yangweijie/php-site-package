@@ -1,21 +1,21 @@
 import React, { useState } from 'react';
-import { 
-  Card, 
-  Button, 
-  Typography, 
-  Progress, 
-  Steps, 
-  Alert, 
+import {
+  Card,
+  Button,
+  Typography,
+  Progress,
+  Steps,
+  Alert,
   Space,
   List,
   Tag,
   Divider,
-  message,
   Modal
 } from 'antd';
-import { 
-  PlayCircleOutlined, 
-  CheckCircleOutlined, 
+import { useMessage } from '../hooks/useMessage';
+import {
+  PlayCircleOutlined,
+  CheckCircleOutlined,
   LoadingOutlined,
   ExclamationCircleOutlined,
   DownloadOutlined,
@@ -44,6 +44,7 @@ const BuildProcess: React.FC = () => {
   const [isBuilding, setIsBuilding] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [buildProgress, setBuildProgress] = useState(0);
+  const message = useMessage();
   const [buildSteps, setBuildSteps] = useState<BuildStep[]>([
     {
       title: '准备构建环境',
@@ -98,9 +99,9 @@ const BuildProcess: React.FC = () => {
       // 模拟构建过程
       for (let i = 0; i < buildSteps.length; i++) {
         setCurrentStep(i);
-        
+
         // 更新当前步骤状态
-        setBuildSteps(prev => prev.map((step, index) => 
+        setBuildSteps(prev => prev.map((step, index) =>
           index === i ? { ...step, status: 'process' } : step
         ));
 
@@ -114,7 +115,7 @@ const BuildProcess: React.FC = () => {
           `${buildSteps[i].title} 完成`
         ];
 
-        setBuildSteps(prev => prev.map((step, index) => 
+        setBuildSteps(prev => prev.map((step, index) =>
           index === i ? { ...step, status: 'finish', logs } : step
         ));
 
@@ -171,8 +172,8 @@ const BuildProcess: React.FC = () => {
       <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Title level={2}>构建和分发</Title>
         <Space>
-          <Button 
-            type="primary" 
+          <Button
+            type="primary"
             size="large"
             icon={<PlayCircleOutlined />}
             onClick={handleStartBuild}
@@ -182,7 +183,7 @@ const BuildProcess: React.FC = () => {
             {isBuilding ? '构建中...' : '开始构建'}
           </Button>
           {buildResults.length > 0 && (
-            <Button 
+            <Button
               icon={<FolderOpenOutlined />}
               onClick={handleOpenOutputDir}
             >
@@ -196,13 +197,13 @@ const BuildProcess: React.FC = () => {
         <Card style={{ marginBottom: 24 }}>
           <div style={{ marginBottom: 16 }}>
             <Text strong>构建进度</Text>
-            <Progress 
-              percent={Math.round(buildProgress)} 
+            <Progress
+              percent={Math.round(buildProgress)}
               status={isBuilding ? 'active' : 'success'}
               className="build-progress"
             />
           </div>
-          
+
           <Steps current={currentStep} direction="vertical" size="small">
             {buildSteps.map((step, index) => (
               <Step
@@ -225,8 +226,8 @@ const BuildProcess: React.FC = () => {
               <List.Item
                 actions={[
                   result.status === 'success' && (
-                    <Button 
-                      type="link" 
+                    <Button
+                      type="link"
                       icon={<DownloadOutlined />}
                       onClick={() => message.info('下载功能开发中')}
                     >

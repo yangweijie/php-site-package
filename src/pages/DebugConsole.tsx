@@ -9,10 +9,10 @@ import {
   Tabs,
   Badge,
   Switch,
-  message,
   Row,
   Col
 } from 'antd';
+import { useMessage } from '../hooks/useMessage';
 import {
   PlayCircleOutlined,
   StopOutlined,
@@ -28,7 +28,7 @@ import AIAssistant from '../components/AIAssistant';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
-const { TabPane } = Tabs;
+
 
 interface LogEntry {
   id: string;
@@ -51,6 +51,8 @@ const DebugConsole: React.FC = () => {
     errors: 0,
     uptime: 0
   });
+  const message = useMessage();
+  const logContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (autoScroll && logContainerRef.current) {
@@ -261,26 +263,44 @@ const DebugConsole: React.FC = () => {
         </Col>
       </Row>
 
-      <Tabs defaultActiveKey="logs">
-        <TabPane tab={<><BugOutlined /> 日志监控</>} key="logs">
-          <LogViewer
-            logs={logs}
-            onClear={clearLogs}
-            onExport={exportLogs}
-            autoScroll={autoScroll}
-            onAutoScrollChange={setAutoScroll}
-          />
-        </TabPane>
-
-        <TabPane tab={<><RobotOutlined /> AI助手</>} key="ai">
-          <AIAssistant
-            projectPath={selectedProject}
-            onApplyFix={(analysisId) => {
-              addLog('info', `AI自动修复已应用: ${analysisId}`, 'AI');
-            }}
-          />
-        </TabPane>
-      </Tabs>
+      <Tabs
+        defaultActiveKey="logs"
+        items={[
+          {
+            key: 'logs',
+            label: (
+              <>
+                <BugOutlined /> 日志监控
+              </>
+            ),
+            children: (
+              <LogViewer
+                logs={logs}
+                onClear={clearLogs}
+                onExport={exportLogs}
+                autoScroll={autoScroll}
+                onAutoScrollChange={setAutoScroll}
+              />
+            )
+          },
+          {
+            key: 'ai',
+            label: (
+              <>
+                <RobotOutlined /> AI助手
+              </>
+            ),
+            children: (
+              <AIAssistant
+                projectPath={selectedProject}
+                onApplyFix={(analysisId) => {
+                  addLog('info', `AI自动修复已应用: ${analysisId}`, 'AI');
+                }}
+              />
+            )
+          }
+        ]}
+      />
     </div>
   );
 };
