@@ -18,7 +18,8 @@ import {
   Alert,
   Divider,
   Badge,
-  Tooltip
+  Tooltip,
+  message
 } from 'antd';
 import {
   AppstoreOutlined,
@@ -78,34 +79,38 @@ const PluginManager: React.FC = () => {
 
   const filterPlugins = () => {
     let plugins = activeTab === 'installed' ? installedPlugins : availablePlugins;
-    
+
     if (searchText) {
-      plugins = plugins.filter(p => 
+      plugins = plugins.filter(p =>
         p.name.toLowerCase().includes(searchText.toLowerCase()) ||
         p.description.toLowerCase().includes(searchText.toLowerCase())
       );
     }
-    
+
     if (categoryFilter !== 'all') {
       plugins = plugins.filter(p => p.category === categoryFilter);
     }
-    
+
     setFilteredPlugins(plugins);
   };
 
   const handleInstall = async (pluginId: string) => {
     try {
       await installPlugin(pluginId);
+      message.success('插件安装成功！');
     } catch (error) {
       console.error('安装插件失败:', error);
+      message.error('插件安装失败，请重试');
     }
   };
 
   const handleUninstall = async (pluginId: string) => {
     try {
       await uninstallPlugin(pluginId);
+      message.success('插件卸载成功！');
     } catch (error) {
       console.error('卸载插件失败:', error);
+      message.error('插件卸载失败，请重试');
     }
   };
 
@@ -164,14 +169,26 @@ const PluginManager: React.FC = () => {
         size="small"
         style={{ width: '100%' }}
         actions={[
-          activeTab === 'installed' ? (
-            <Tooltip title={plugin.enabled ? '禁用插件' : '启用插件'}>
-              <Switch
-                checked={plugin.enabled}
-                onChange={() => handleToggleEnable(plugin)}
+          plugin.status === 'installed' ? (
+            activeTab === 'installed' ? (
+              <Tooltip title={plugin.enabled ? '禁用插件' : '启用插件'}>
+                <Switch
+                  checked={plugin.enabled}
+                  onChange={() => handleToggleEnable(plugin)}
+                  size="small"
+                />
+              </Tooltip>
+            ) : (
+              <Button
+                type="default"
                 size="small"
-              />
-            </Tooltip>
+                icon={<CheckCircleOutlined />}
+                disabled
+                style={{ color: '#52c41a', borderColor: '#52c41a' }}
+              >
+                已安装
+              </Button>
+            )
           ) : (
             <Button
               type="primary"
@@ -191,7 +208,7 @@ const PluginManager: React.FC = () => {
               onClick={() => handleConfigure(plugin)}
             />
           </Tooltip>,
-          activeTab === 'installed' && (
+          plugin.status === 'installed' && (
             <Tooltip title="卸载插件">
               <Button
                 type="text"
@@ -223,7 +240,7 @@ const PluginManager: React.FC = () => {
                 {plugin.category}
               </Tag>
               <Tag color={getStatusColor(plugin.status)}>
-                v{plugin.version}
+                {plugin.status === 'installed' ? '已安装' : '可安装'} v{plugin.version}
               </Tag>
             </Space>
           }
@@ -288,7 +305,7 @@ const PluginManager: React.FC = () => {
               <Option value="utility">实用工具</Option>
             </Select>
           </Space>
-          
+
           <Space>
             <Text type="secondary">
               已安装: {installedPlugins.length} | 可用: {availablePlugins.length}
@@ -299,12 +316,12 @@ const PluginManager: React.FC = () => {
 
       {/* 插件列表 */}
       <Tabs activeKey={activeTab} onChange={setActiveTab}>
-        <TabPane 
+        <TabPane
           tab={
             <Badge count={installedPlugins.length} size="small">
               <span>已安装插件</span>
             </Badge>
-          } 
+          }
           key="installed"
         >
           {installedPlugins.length === 0 ? (
@@ -324,12 +341,12 @@ const PluginManager: React.FC = () => {
           )}
         </TabPane>
 
-        <TabPane 
+        <TabPane
           tab={
             <Badge count={availablePlugins.length} size="small">
               <span>插件市场</span>
             </Badge>
-          } 
+          }
           key="available"
         >
           <Alert
@@ -339,7 +356,7 @@ const PluginManager: React.FC = () => {
             style={{ marginBottom: 16 }}
             showIcon
           />
-          
+
           <List
             grid={{ gutter: 16, column: 2 }}
             dataSource={filteredPlugins}
